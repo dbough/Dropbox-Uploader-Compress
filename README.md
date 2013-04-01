@@ -18,3 +18,7 @@ Dropbox-Uploader-Reload is a fork of Andrea Fabrizi's Dropbox-Uploader (https://
 Requirements
 -
 - GetOpt::Long (http://perldoc.perl.org/Getopt/Long.html).
+
+THIS SOFTWARE IS IN DEVELOPMENT
+=
+This software is in development and is not yet ready for use.  
