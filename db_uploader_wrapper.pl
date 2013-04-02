@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# Dropbox Uploader Reloaded
+# Dropbox Uploader Compress
 #
 # Copyright (C) 2010-2013 Dan Bough <daniel.bough@gmail.com>
 #
