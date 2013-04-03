@@ -19,13 +19,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-# Debug stuff.
-
-use Data::Dumper;
-use warnings;
-
-#####
-
 use strict;
 use Getopt::Long qw(:config no_auto_abbrev);
 use POSIX qw(strftime);
@@ -45,7 +38,7 @@ my $nocompress; 							# Compress files / folders before uploading?
 my $help; 									# Display help?
 
 GetOptions (
-    "bu_source_file=s"   => \$backupSourceFile, 	# required
+    "bu_source=s"   => \$backupSourceFile, 	# required
     "bu_source_path=s"   => \$backupSourcePath, 	# required
     "type=s"   => \$backupSourceType,               # required
     "bu_prefix=s"   => \$buPrefix,					# optional
@@ -76,26 +69,26 @@ if ( !$nocompress ) {
 }
 my $dbuExe = $dbuScriptPath . $dbuScriptName;
 
+# Format source folder (add a / at the end)
 if ( $backupSourceType eq 'folder' ) {
     $backupSourceFile = $backupSourceFile . "/";
 }
 
-# All of our work is done here.  Compress (if flag is set), then backup to dropbox, then remove the local compressed file (if flag is set).
+# All of our work is done here.  Compress (unless the nocompress flag is set), then backup to dropbox, then remove the local compressed file (if nocompress flag is set).
 if ( !$nocompress ) {
- system($tar . " -czf " . $buStagingFolder . $filename . " -C " . $backupSourcePath . " " . $backupSourceFile);
- system($dbuScriptPath . $dbuScriptName . " upload " . $buStagingFolder . $filename . " " . $backupTarget);
- system($rm . " " . $buStagingFolder . $filename);
+    system($tar . " -czf " . $buStagingFolder . $filename . " -C " . $backupSourcePath . " " . $backupSourceFile);
+    system($dbuScriptPath . $dbuScriptName . " upload " . $buStagingFolder . $filename . " " . $backupTarget);
+    system($rm . " " . $buStagingFolder . $filename);
 } else {
     system($dbuScriptPath . $dbuScriptName . " upload " . $backupSourcePath . $backupSourceFile . " " . $backupTarget);
 }
 
-
 sub readme{
-	print "Dropbox Uploader Compress v0.1\n";
+	print "Dropbox Uploader Compress v0.1.1\n";
 	print "Dan Bough - daniel.bough\@gmail.com\n\n";
 	print "Usage:  ./db_uploader_compress.pl [OPTIONS]\n";
-    print "Example:  ./db_uploader_compress.pl --bu_source_file='foo' --bu_source_path='/home/bar/' --bu_target_folder='baz' --script_path='/usr/sbin/' --type='folder'\n\n";
-    print "--bu_source_file     Required:  Folder of file to back up.  Do NOT use full paths.\n";
+    print "Example:  ./db_uploader_compress.pl --bu_source='foo' --bu_source_path='/home/bar/' --bu_target_folder='baz' --script_path='/usr/sbin/' --type='folder'\n\n";
+    print "--bu_source          Required:  Folder of file to back up.  Do NOT use full paths or slashes.\n";
     print "--bu_source_path     Required:  Path to --bu_source_file.\n";
     print "--type               Required:  Source = folder or file.\n";
     print "--bu_prefix          Optional:  Backed up file/folder filename prefix. (Defaults to 'default').  This is not applicable if the --nocompress flag is set.\n";
