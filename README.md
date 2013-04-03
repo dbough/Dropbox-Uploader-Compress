@@ -46,8 +46,8 @@ Instructions
     --nocompress         Optional:  Do not compress file (tar and gzip). Folders HAVE to be compressed!
     --help               Optional:  Display this message.
 
-*Tested On*
-
+Tested On
+---------
 - Ubuntu Linux 12.04
 
 TODO
