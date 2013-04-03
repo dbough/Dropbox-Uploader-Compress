@@ -27,8 +27,8 @@ Requirements
 
 Instructions
 ------------
-- First time only:  Run ./dropbox_uploader.sh & follow the instructions.
-- Run ./db_uploader_compress.pl --help
+1) First time only:  Run `./dropbox_uploader.sh` & follow the instructions.  
+2) Run `./db_uploader_compress.pl --help`
 
     Usage:  ./db_uploader_compress.pl [OPTIONS]
     Example:  ./db_uploader_compress.pl --bu_source='foo' --bu_source_path='/home/bar/' --bu_target_folder='baz' --script_path='/usr/sbin/' --type='folder'
