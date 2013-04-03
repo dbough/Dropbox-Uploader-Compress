@@ -25,9 +25,18 @@ Requirements
 
 Instructions
 ------------
+- First time only:  Run ./dropbox_uploader.sh & follow the instructions.
+- Run ./db_uploader_compress.pl --help
+
+TODO
+----
+- Update instructions.
+- Deeper testing.
 
 Changelog
 ---------
+v0.1.1 - More stable release.  Operates under normal conditions.
+
 v0.1 - Unstable release.  Active development.
 
 
