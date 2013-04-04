@@ -84,7 +84,7 @@ if ( !$nocompress ) {
 }
 
 sub readme{
-	print "Dropbox Uploader Compress v0.1.1\n";
+	print "Dropbox Uploader Compress v0.1.2\n";
 	print "Dan Bough - daniel.bough\@gmail.com\n\n";
 	print "Usage:  ./db_uploader_compress.pl [OPTIONS]\n";
     print "Example:  ./db_uploader_compress.pl --bu_source='foo' --bu_source_path='/home/bar/' --bu_target_folder='baz' --script_path='/usr/sbin/' --type='folder'\n\n";
