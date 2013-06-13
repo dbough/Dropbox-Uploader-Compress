@@ -1,6 +1,7 @@
 Dropbox Uploader Compress
 -------------------------
-v0.1.2 - Current Beta Release (2013-04-03).
+v0.1.3 - Current Develop Release (2013-06-13).
+Certain feature may not work.  Please see the master branch for latest working version.
 
 Author
 ------
