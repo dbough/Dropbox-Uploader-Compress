@@ -33,10 +33,10 @@ my $buTargetFolder; 						# Folder on dropbox to back up to.
 my $buStagingFolder = "/tmp/"; 				# Local folder to stage your backup.  Used as a container to compress the backup.
 my $dbuScriptName = "dropbox_uploader.sh"; 	# Name of Dropbox_Uploader script.
 my $dbuScriptPath = "./"; 					# Path where Dropbox_Uploader lives.
-my $compressPath = "/bin/tar"; 			# Path to the tar or zip exe.
+my $compressType;                           # What compression?  tar = tar/gzip, zip = zip
+my $compressPath;                        	# Path to the tar or zip exe.
 my $rm = "/bin/rm"; 						# Path to the rm exe.
 my $nocompress; 							# Compress files / folders before uploading?
-my $compressType;                           # What compression?  tar = tar/gzip, zip = zip
 my $fileSuffix;                             # Use custom suffix?
 my $encrypt;                                # Encrypt file?
 my $help; 									# Display help?
@@ -48,22 +48,19 @@ GetOptions (
     "bu_staging_folder=s"   => \$buStagingFolder, 	# optional
     "script_name=s"   => \$dbuScriptName, 			# optional
     "script_path=s"   => \$dbuScriptPath, 			# optional
-    "compress_path=s"   => \$compressPath, 			# optional
+    "compression_path=s"   => \$compressPath, 			# optional
     "rm=s"   => \$rm, 								# optional
     "nocompress"  => \$nocompress, 					# optional
-    "compression_type" => \$compressType,           # optional
-    "file_suffix"   => \$fileSuffix,                # optional
-    "help" => \$help								# optional
+    "compression_type=s" => \$compressType,         # optional
+    "file_suffix=s"   => \$fileSuffix,                # optional
+    "help" => \$help,								# optional
+    "encrypt" => \$encrypt                          # optional
 ); 
 
-# Set default compression paths
-if ( !$compressPath ) {
-    if (!$compressType || $compressType eq 'tar' ) {
-        $compressPath = "/bin/tar";
-    } elsif ( $compressType eq 'zip' ) {
-        $compressPath = "/usr/bin/zip";
-    }
-}
+# Get compression type and paths
+$compressType = get_compression_type();
+$compressPath = get_compression_path();
+$fileSuffix = get_file_suffix();
 
 # Format the target folder (add a / at the end)
 $buTargetFolder = $buTargetFolder . "/";
@@ -73,7 +70,8 @@ if ( !$backupSource || $help ) { readme(); }
 
 # Other variables.
 my $time = strftime "%Y-%m-%d_%H-%M-%S", localtime; # Formatted time (to use in the backed up file/folder name).
-my $filename = $buPrefix . "_" . "backup_" . $time . ".tgz";
+my $filename = $buPrefix . "_" . "backup_" . $time . "." . $fileSuffix;
+
 my $backupTarget;
 if ( !$nocompress ) {
     $backupTarget =  $buTargetFolder . $filename;
@@ -108,13 +106,51 @@ if ( -f $backupSource ) {
     }
 }
 
-# All of our work is done here.  Compress (unless the nocompress flag is set), then backup to dropbox, then remove the local compressed file (if nocompress flag is set).
+
+# All of our work is done here.
 switch ( $compressType ) {
-    case "tar" { tar_file()  }
-    case "zip" { zip_file()  }
+    case "tar" { tar_file() }
+    case "zip" { zip_file() }
+    else { no_compress() }
 }
 
 # Subs below 
+
+sub get_compression_type {
+    if ( $compressType eq 'zip' ) {
+        return 'zip';
+    } elsif ( $compressType eq 'tar' ) {
+        return 'tar';
+    } elsif ( $nocompress ) {
+        return 'none';
+    } else {
+        return 'tar'
+    }
+}
+
+sub get_compression_path {
+    if ( $compressPath ) {
+        return $compressPath;
+    } elsif ( $compressType eq 'zip' ) {
+        return "/usr/bin/zip"
+    } elsif ( $compressType eq 'tar' ) {
+        return "/bin/tar";;
+    } else {
+        return "";
+    }
+}
+
+sub get_file_suffix {
+    if ( $fileSuffix ) {
+        return $fileSuffix;
+    } elsif ( $compressType eq 'zip' ) {
+        return "zip";
+    } elsif ( $compressType eq 'tar' ) {
+        return "tgz";
+    } else {
+        return "";
+    }
+}
 
 sub is_folder_empty {
     my $dirname = shift;
@@ -135,8 +171,30 @@ sub tar_file {
         system($dbuScriptPath . $dbuScriptName . " upload " . $buStagingFolder . $filename . " " . $backupTarget);
         system($rm . " " . $buStagingFolder . $filename);
     } else {
-        system($dbuScriptPath . $dbuScriptName . " upload " . $backupSource . " " . $backupTarget);
+        print "The --nocompress flag is set. Cannot continue.  For help, run ./db_uploader_compress --help\n\n";
+        exit;
     }
+}
+
+sub zip_file {
+    if ( $encrypt ) {
+        print "You encrypted it!\n";
+    } else {
+        system($compressPath . " " . $buStagingFolder . $filename . " " . $backupSourceFolder . " " . $backupSource);
+        system($dbuScriptPath . $dbuScriptName . " upload " . $buStagingFolder . $filename . " " . $backupTarget);
+        system($rm . " " . $buStagingFolder . $filename);
+    }
+}
+
+sub no_compress {
+    if ( $backupSourceType eq 'folder' ) {
+        print "You must compress folders.  Please remove the --nocompress flag.\n";
+    }
+    system($dbuScriptPath . $dbuScriptName . " upload " . $backupSource . " " . $backupTarget);
+}
+
+sub encript {
+
 }
 
 sub readme{
@@ -149,9 +207,9 @@ sub readme{
     print "--bu_staging_folder  Optional:  Folder to stage backkup file / folder (it gets compressed here & then gets removed after it's uploaded.  Defaults to /tmp/.)\n";
     print "--bu_target_folder   Optional:  Folder on dropbox to back up to.\n";
     print "--compression_type   Optional:  Valid compression types:  tar (tar/gzip), zip (zip)\n";
-    print "--compress_path      Optional:  Path to compression file.  Default:  /bin/tar (tar), /usr/bin/zip (zip).\n";
+    print "--compression_path      Optional:  Path to compression file.  Default:  /bin/tar (tar), /usr/bin/zip (zip).\n";
     print "--file_suffix        Optional:  Custom file suffix.  Used to obfuscate file types.\n";
-    print "--Encrypt            Optional:  Encrypt file\n";
+    print "--encrypt            Optional:  Encrypt file\n";
     print "--help               Optional:  Display this message.\n";
     print "--nocompress         Optional:  Do not compress file (tar and gzip). Folders HAVE to be compressed!\n";       
     print "--rm                 Optional:  Path to rm (defaults to /bin/rm).\n";

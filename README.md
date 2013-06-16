@@ -1,6 +1,6 @@
 Dropbox Uploader Compress
 -------------------------
-v0.1.3 - Current Develop Release (2013-06-13).
+v0.1.3 - Current Develop Release (2013-06-13).  
 Certain feature may not work.  Please see the master branch for latest working version.
 
 Author
@@ -32,34 +32,39 @@ Instructions
 2) Run `./db_uploader_compress.pl --help`
 
     Usage:  ./db_uploader_compress.pl [OPTIONS]
-    Example:  ./db_uploader_compress.pl --bu_source='foo' --bu_source_path='/home/bar/' --bu_target_folder='baz' --script_path='/usr/sbin/' --type='folder'
-    
-    --bu_source_file     Required:  Folder of file to back up.  Do NOT use full paths.
-    --bu_source_path     Required:  Path to --bu_source_file.
-    --type               Required:  Source = folder or file.
+    Example:  ./db_uploader_compress.pl     --bu_source='/home/bar/foo' --bu_target_folder='baz'
+
+    --bu_source          Required:  Folder of file to back up.  Do NOT use full paths or slashes.
     --bu_prefix          Optional:  Backed up file/folder filename prefix. (Defaults to 'default').  This is not applicable if the --nocompress flag is set.
-    --bu_target_folder   Optional:  Folder on dropbox to back up to.
     --bu_staging_folder  Optional:  Folder to stage backkup file / folder (it gets compressed here & then gets removed after it's uploaded.  Defaults to /tmp/.)
-    --script_name        Optional:  Name of Dropbox Uploader shell script (defaults to dropbox_uploader.sh).
-    --script_path        Required:  Path where dropbox_uploader.sh lives
-    --tar                Optional:  Path to tar (defaults to /bin/tar).
-    --rm                 Optional:  Path to rm (defaults to /bin/rm).
-    --nocompress         Optional:  Do not compress file (tar and gzip). Folders HAVE to be compressed!
+    --bu_target_folder   Optional:  Folder on dropbox to back up to.
+    --compression_type   Optional:  Valid compression types:  tar (tar/gzip), zip (zip)
+    --compression_path      Optional:  Path to compression file.  Default:  /bin/tar (tar), /usr/bin/zip (zip).
+    --file_suffix        Optional:  Custom file suffix.  Used to obfuscate file types.
+    --encrypt            Optional:  Encrypt file
     --help               Optional:  Display this message.
+    --nocompress         Optional:  Do not compress file (tar and gzip). Folders HAVE to be compressed!
+    --rm                 Optional:  Path to rm (defaults to /bin/rm).
+    --script_name        Optional:  Name of Dropbox Uploader shell script (defaults to dropbox_uploader.sh).
+    --script_path        Optional:  Path where dropbox_uploader.sh lives (defaults to local directory).
 
 Tested On
 ---------
 - Ubuntu Linux 12.04
+- Raspberri Pi Linux 3.6.11
 
 TODO
 ----
-- Update instructions (screencast).
+- Enable encryption
 
 Changelog
 ---------
+- v0.1.3 - Current develop release.  
+-- Uses Dropbox Uploader v0.11.8  
+-- Adds support for ZIP copmression.  
+-- Adds ability to specify file extension (for file type obfuscation.)  
+-- Adds option to encrpyt file / folder.  
+-- Removes required flags (makes them optional) for easier use.
 - v0.1.2 - Current beta release.  Uses Dropbox Uploader v0.11.6.
 - v0.1.1 - More stable release.  Operates under normal conditions.
-- v0.1 - Unstable release.  Active development.
-
-
- 
+- v0.1 - Unstable release.  Active development.  
