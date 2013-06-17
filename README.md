@@ -39,7 +39,7 @@ Instructions
     --bu_staging_folder  Optional:  Folder to stage backkup file / folder (it gets compressed here & then gets removed after it's uploaded.  Defaults to /tmp/.)
     --bu_target_folder   Optional:  Folder on dropbox to back up to.
     --compression_type   Optional:  Valid compression types:  tar (tar/gzip), zip (zip)
-    --compression_path      Optional:  Path to compression file.  Default:  /bin/tar (tar), /usr/bin/zip (zip).
+    --compression_path   Optional:  Path to compression file.  Default:  /bin/tar (tar), /usr/bin/zip (zip).
     --file_suffix        Optional:  Custom file suffix.  Used to obfuscate file types.
     --encrypt            Optional:  Encrypt file
     --help               Optional:  Display this message.
