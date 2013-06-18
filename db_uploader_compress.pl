@@ -121,14 +121,18 @@ if ( -f $backupSource ) {
 }
 
 # If the ecnrpyt flag is set, make sure we have private and public keys
-# in the local directory.  If not, prompt user to create them.
+# in the local directory.  If not, prompt user to create them through the encrypt_help sub.
 if ( $encrypt ) {
     my $dirname = dirname(__FILE__);
     if ( (-f $dirname . "/key.pem") && ( -f $dirname . "/key-public.pem") ) {
+        # Check to make sure the keys are formatted correctly.  
+        # If not, the subroutine will exit and the script will stop executing.
+        is_key_valid( "key.pem", "private" );
+        is_key_valid( "key-public.pem", "public" );
         print "key.pem and key-public.pem found.  Continuing...\n";
-    } else {
-        print encrypt_help();
         exit;
+    } else {
+        encrypt_help();
     }
 }
 
@@ -230,7 +234,29 @@ sub no_compress {
     system($dbuScriptPath . $dbuScriptName . " upload " . $backupSource . " " . $backupTarget . " " . $suppressOutput);
 }
 
-sub encript {
+sub is_key_valid {
+    my $file = shift;
+    my $type = shift;
+    my $result;
+    open FILE, $file or die $!;
+    while ( <FILE> ) {
+        if ( $type eq "private" ) {
+            $result = index($_, "BEGIN RSA PRIVATE KEY");
+        } elsif ( $type eq "public" ) {
+            $result = index($_, "BEGIN PUBLIC KEY");
+        } else {
+            print "Unknown key type:  $type ! \n";
+            encrypt_help();
+        }
+    }
+    close(FILE);
+    if ( !($result >= 0) ) {
+        print "$file does not appear to be a valid $type key.\n";
+        encrypt_help();
+    }
+}
+
+sub encrypt {
 
 }
 
@@ -258,8 +284,8 @@ sub readme{
 
 sub encrypt_help{
     print "\nEncryption Help\n\n";
-    print "In order to encrypt a file or folder, a public and private encryption key must be present in the same directory ad db_uploader_compress.pl\n";
-    print "These files must be named 'key.pem' (private key) and key-public.pm (private key).\n";
+    print "In order to encrypt a file or folder, a public and private encryption key must be present in the same directory as db_uploader_compress.pl\n";
+    print "These files must be named 'key.pem' (private key) and key-public.pm (public key).\n";
     print "To create these keys, run the following from the command line:\n\n";
     print "openssl genrsa -out key.pem 2048\n";
     print "openssl rsa -in key.pem -out key-public.pem -outform PEM -pubout\n\n";
@@ -269,4 +295,5 @@ sub encrypt_help{
     print "To decrypt the password and file, run the following from the command line:\n\n";
     print "openssl rsautl -decrypt -inkey key.pem < enc.key.txt > key.txt\n";
     print "openssl enc -aes-256-cbc -d -pass file:key.txt < ENCRYPTED_FILE_NAME > UNENCRYPTED_FILE_NAME\n\n";
+    exit;
 }
