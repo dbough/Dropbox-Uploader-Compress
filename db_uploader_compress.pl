@@ -20,17 +20,10 @@
 #
 
 use strict;
-use Getopt::Long qw(:config no_auto_abbrev permute);
+use Getopt::Long qw(:config no_auto_abbrev);
 use POSIX qw(strftime);
 use Switch;
 use File::Basename;
-
-# Unknown options
-# if ( $ARGV[0] ) {
-#     print $ARGV[0] . " is unknown!\n\n";
-#     readme();
-#     exit;
-# }
 
 # Configurable variables
 my $backupSource;    						# Folder or file to back up.  Do not use FULL names.
@@ -44,7 +37,6 @@ my $dbuScriptPath = "./"; 					# Path where Dropbox_Uploader lives.
 my $compressType;                           # What compression?  tar = tar/gzip, zip = zip
 my $compressPath;                        	# Path to the tar or zip exe.
 my $rm = "/bin/rm"; 						# Path to the rm exe.
-my $openssl = "/usr/bin/openssl";           # Path of OpenSSL exe.
 my $mv = "/bin/mv";                         # Path to mv exe.
 my $download;                               # Print help for download.  Easiest to use dropbox_uplooader.sh
 my $nocompress; 							# Compress files / folders before uploading?
@@ -53,7 +45,7 @@ my $encrypt;                                # Encrypt file?
 my $quiet;                                  # Suppress output?
 my $suppressOutput;                         # Used in conjunction with $queiet.
 my $help; 									# Display help?
-
+    
 GetOptions (
     "bu_source=s"   => \$backupSource, 	            # required
     "bu_prefix=s"   => \$buPrefix,					# optional
@@ -72,52 +64,50 @@ GetOptions (
     "q" => \$quiet                                  # optional
 ); 
 
-# If download is set, print help for download.
-if ( $download ) {
-    download_help();
-}
-
 # Set variables based on flags passed etc.
 $compressType = get_compression_type();
 $compressPath = get_compression_path();
 $fileSuffix = get_file_suffix();
 $suppressOutput = get_suppress_output();
+my $dbuExe = $dbuScriptPath . $dbuScriptName;
 
+# Other variables
+my $time = strftime "%Y-%m-%d_%H-%M-%S", localtime; 
+my $filename = $buPrefix . "_" . "backup_" . $time . "." . $fileSuffix;
+my $password_file = "pass_" . $time . ".txt";
+my $openssl = "/usr/bin/openssl";      
+my $backupTarget;
+
+# If download is set, print help for download.
+if ( $download ) {
+    download_help();
+}
 # Format the target folder (add a / at the end)
 $buTargetFolder = $buTargetFolder . "/";
 
 # Verify our required flags are set.  If not, send instructions to the screen.
 if ( !$backupSource || $help ) { readme(); }
 
-# Other variables.
-my $time = strftime "%Y-%m-%d_%H-%M-%S", localtime; # Formatted time (to use in the backed up file/folder name).
-my $filename = $buPrefix . "_" . "backup_" . $time . "." . $fileSuffix;
-my $password_file = "pass_" . $time . ".txt";
-
-my $backupTarget;
 if ( !$nocompress ) {
     $backupTarget =  $buTargetFolder . $filename;
 } else {
     $backupTarget = get_file_name($backupSource);
 }
-my $dbuExe = $dbuScriptPath . $dbuScriptName;
 
 # Determine if the source is a file or a folder
 if ( -f $backupSource ) {
     $backupSourceType = 'file';
+    # Determine the parent directory of the file
     if ( !$nocompress ) {
         $backupSourceFolder = get_folder_name($backupSource);
     }
 } elsif ( -d $backupSource ) {
     $backupSourceType = 'folder';
 
-    # Format source folder (add a / at the end)
-    # $backupSource = $backupSource . "/";
-
     # For relative paths when using TAR
     $backupSourceFolder = $backupSource;
 
-    # If the compress flag not set, exit;
+    # If the nocompress flag is set, exit;
     if ( $nocompress ) {
         print "You must compress folders!  Remove the --nocompress flag please.\n";
         exit;
@@ -125,7 +115,7 @@ if ( -f $backupSource ) {
 
     # Determine if folder is empty
     if ( is_folder_empty($backupSource) ) {
-        print "Folder is empty dummy!  Put some stuff in it first!\n";
+        print "Folder is empty!  Put some stuff in it first!\n";
         exit;
     }
 
@@ -136,8 +126,7 @@ if ( -f $backupSource ) {
     }
 }
 
-# If the ecnrpyt flag is set, make sure we have private and public keys
-# in the local directory.  If not, prompt user to create them through the encrypt_help sub.
+# If the ecnrpyt flag is set, create a random password and store it in $password_file
 if ( $encrypt ) {
     my $result = encrypt_password();
     if ( !$result ) {
@@ -146,15 +135,17 @@ if ( $encrypt ) {
     }
 }
 
-# All of our work is done here.
+# Process file / folder based on compression type and send it to Dropbox.
 switch ( $compressType ) {
     case "tar" { tar_file() }
     case "zip" { zip_file() }
     else { no_compress() }
 }
 
-# Subs below 
+################### SUBS BELOW ####################
 
+# Allows the omission of compression type flag.
+# Defaults to 'tar' unless the nocompress flag is set 
 sub get_compression_type 
 {
     if ( $compressType eq 'zip' ) {
@@ -168,6 +159,7 @@ sub get_compression_type
     }
 }
 
+# Default paths to the compression software
 sub get_compression_path 
 {
     if ( $compressPath ) {
@@ -181,6 +173,7 @@ sub get_compression_path
     }
 }
 
+# Default file suffixes determined by the compression type
 sub get_file_suffix 
 {
     # If we're encrypting, add another file extension.
@@ -189,7 +182,7 @@ sub get_file_suffix
         $enc = "enc.";
     }
     if ( $fileSuffix ) {
-        return $fileSuffix;
+        return $enc . $fileSuffix;
     } elsif ( $compressType eq 'zip' ) {
         return $enc . "zip";
     } elsif ( $compressType eq 'tar' ) {
@@ -199,6 +192,7 @@ sub get_file_suffix
     }
 }
 
+# Dirty way to silence everything if required
 sub get_suppress_output 
 {
     if ( $quiet ) {
@@ -208,6 +202,7 @@ sub get_suppress_output
     }
 }
 
+# If a directory is empty, we don't bother processing it
 sub is_folder_empty 
 {
     my $dirname = shift;
@@ -221,6 +216,7 @@ sub get_folder_name
     return dirname($file);
 }
 
+# If we're not compressing, we only need the file name (will be sent to Dropbox as this).
 sub get_file_name 
 {
     my $file = shift;
@@ -228,15 +224,21 @@ sub get_file_name
     return  @paths[-1];
 }
 
+# Compress with tar / gzip
 sub tar_file 
 {
+    # Verify the nocompress flag is not set.  It shouldn't be - this is just a precaution.
     if ( !$nocompress ) {
+        # Compress file
         system($compressPath . " czfP " . $buStagingFolder . $filename . " -C " . $backupSourceFolder . " " . $backupSource . " " . $suppressOutput);
+        # Encrypt if needed
         if ( $encrypt ) { 
             encrypt_file($buStagingFolder . $filename);
             encrypt_help($filename);
         }
+        # Send to Dropbox
         system($dbuScriptPath . $dbuScriptName . " upload " . $buStagingFolder . $filename . " " . $backupTarget . " " . $suppressOutput);
+        # Delete temp file
         system($rm . " " . $buStagingFolder . $filename) . " " . $suppressOutput;
     } else {
         print "The --nocompress flag is set. Cannot continue (you are trying to tar/gzip a file.)  For help, run ./db_uploader_compress --help\n\n";
@@ -244,15 +246,21 @@ sub tar_file
     }
 }
 
+# Compress with zip
 sub zip_file 
 {
+    # Verify the nocompress flag is not set.  It shouldn't be - this is just a precaution.
     if ( !$nocompress ) {
+        # Compress file
         system($compressPath . " " . $buStagingFolder . $filename . " " . $backupSourceFolder . " " . $backupSource . " " . $suppressOutput);
+        # If encryption is selected, do so now.
         if ( $encrypt ) { 
             encrypt_file($buStagingFolder . $filename);
             encrypt_help($filename);
         }
+        # Send file to Dropbox
         system($dbuScriptPath . $dbuScriptName . " upload " . $buStagingFolder . $filename . " " . $backupTarget . " " . $suppressOutput);
+        # Delete temp file.
         system($rm . " " . $buStagingFolder . $filename);
     } else {
         print "The --nocompress flag is set. Cannot continue (you are trying to tar/gzip a file.)  For help, run ./db_uploader_compress --help\n\n";
@@ -260,17 +268,23 @@ sub zip_file
     }
 }
 
+# Do no compress
 sub no_compress 
 {
+    # If this is a folder throw an error.  This should never happen - this is a precaution.
     if ( $backupSourceType eq 'folder' ) {
         print "You must compress folders.  Please remove the --nocompress flag.\n";
+        exit;
     }
+    # Encrypt if needed
     if ( $encrypt ) { 
             encrypt_file($backupSource);
     }
+    # Send file to Dropbox
     system($dbuScriptPath . $dbuScriptName . " upload " . $backupSource . " " . $backupTarget . " " . $suppressOutput);
 }
 
+# Generates a random password and file, used for encryption
 sub encrypt_password
 {
     # Generate random password and put it in a file.
@@ -285,6 +299,7 @@ sub encrypt_password
     }
 }
 
+# Encrypt a file 
 sub encrypt_file
 {
     my $file = shift;
@@ -293,6 +308,7 @@ sub encrypt_file
     system("$mv $tmpFile $file");
 }
 
+# If the -download flag is passed, just print instructions.
 sub download_help
 {
     print "Please run dropbox_uploader.sh to download a file.\n\n";
@@ -300,12 +316,13 @@ sub download_help
     exit;
 }
 
+# Help / instructions
 sub readme
 {
-	print "Dropbox Uploader Compress v0.1.3\n";
+	print "Dropbox Uploader Compress v0.2.0\n";
 	print "Dan Bough - daniel.bough\@gmail.com\n\n";
 	print "Usage:  ./db_uploader_compress.pl [OPTIONS]\n";
-    print "Example:  ./db_uploader_compress.pl --bu_source='/home/bar/foo' --bu_target_folder='baz'\n\n";
+    print "Example:  ./db_uploader_compress.pl -bu_source='/home/bar/foo'\n\n";
     print "-bu_source          Required:  Folder of file to back up.  Do NOT use full paths or slashes.\n";
     print "-bu_prefix          Optional:  Backed up file/folder filename prefix. (Defaults to 'default').  This is not applicable if the --nocompress flag is set.\n";
     print "-bu_staging_folder  Optional:  Folder to stage backkup file / folder (it gets compressed here & then gets removed after it's uploaded.  Defaults to /tmp/.)\n";
@@ -324,32 +341,23 @@ sub readme
 	exit;
 }
 
+# If encryption is used, display decryption help to the user.  Also writes it to a file for future reference.
 sub encrypt_help
 {
     my $file = shift;
     my $unencrypted = $file;
     $unencrypted =~ s/.enc//i;
-    my $log = "Instructions_" . $file . ".txt";
+    my $log = "DECRYPT_INSTRUCTIONS_" . $file . ".txt";
 
-    print "\n!!!DO NOT LOSE THIS!!!\n\n";
-    print "Encryption Help for $file.\n\n";
-    print "You have chosen to encrypt your file.  The extension '.enc' will be added before the normal file extension.\n";
-    print "A password file called '$password_file' has been created for you.\n";
-    print "It will be needed to decrypt the file later on.\n";
-    print "To decrypt, run the following:\n\n";
-    print " openssl enc -d -aes-256-cbc -in $file -out $unencrypted -pass file:$password_file\n\n";
-    print "You will find these instructions in '$log'.\n\n";
+    print "\nIMPORTANT:  Decryption instructions for $file located in $log.\n\n";
 
     open FH, ">$log";
-
     print FH "\n!!!DO NOT LOSE THIS!!!\n\n";
-    print FH "Encryption Help for $file\n\n";
+    print FH "======= Encryption help for $file =======\n\n";
     print FH "You have chosen to encrypt your file.  The extension '.enc' will be added before the normal file extension.\n";
-    print FH "A password file called '$password_file' has been created for you.\n";
-    print FH "It will be needed to decrypt the file later on.\n";
+    print FH "A password file called '$password_file' has been created for you and will be needed to decrypt your file.\n";
     print FH "To decrypt, run the following:\n\n";
     print FH " openssl enc -d -aes-256-cbc -in $file -out $unencrypted -pass file:$password_file\n\n";
-    print FH "You will find these instructions in '$log'.\n\n";
-
+    print FH "This assumes your files are in the same path as db_uploader_compress.pl.  Add paths if necessary.\n";
     close FH;
 }
