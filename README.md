@@ -33,7 +33,7 @@ Instructions
     Usage:  ./db_uploader_compress.pl [OPTIONS]
     Example:  ./db_uploader_compress.pl -bu_source='/home/bar/foo'
     
-    -bu_source          Required:  Folder of file to back up.  Do NOT use full paths or slashes.
+    -bu_source          Required:  Folder of file to back up.  Use full paths.
     -bu_prefix          Optional:  Backed up file/folder filename prefix. (Defaults to 'default').  This is not applicable if the --nocompress flag is set.
     -bu_staging_folder  Optional:  Folder to stage backkup file / folder (it gets compressed here & then gets removed after it's uploaded.  Defaults to /tmp/.)
     -bu_target_folder   Optional:  Folder on dropbox to back up to.

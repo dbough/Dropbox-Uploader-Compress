@@ -323,7 +323,7 @@ sub readme
 	print "Dan Bough - daniel.bough\@gmail.com\n\n";
 	print "Usage:  ./db_uploader_compress.pl [OPTIONS]\n";
     print "Example:  ./db_uploader_compress.pl -bu_source='/home/bar/foo'\n\n";
-    print "-bu_source          Required:  Folder of file to back up.  Do NOT use full paths or slashes.\n";
+    print "-bu_source          Required:  Folder of file to back up.  Use full paths.\n";
     print "-bu_prefix          Optional:  Backed up file/folder filename prefix. (Defaults to 'default').  This is not applicable if the --nocompress flag is set.\n";
     print "-bu_staging_folder  Optional:  Folder to stage backkup file / folder (it gets compressed here & then gets removed after it's uploaded.  Defaults to /tmp/.)\n";
     print "-bu_target_folder   Optional:  Folder on dropbox to back up to.\n";
