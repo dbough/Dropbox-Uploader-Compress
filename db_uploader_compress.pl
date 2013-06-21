@@ -82,6 +82,7 @@ my $backupTarget;
 if ( $download ) {
     download_help();
 }
+
 # Format the target folder (add a / at the end)
 $buTargetFolder = $buTargetFolder . "/";
 
@@ -103,6 +104,11 @@ if ( -f $backupSource ) {
     }
 } elsif ( -d $backupSource ) {
     $backupSourceType = 'folder';
+
+    # If the user didnt include a trailing "/" in the backup source name, add it.
+    if (substr($backupSource, -1) ne '/'){
+        $backupSource .= "/";
+    }
 
     # For relative paths when using TAR
     $backupSourceFolder = $backupSource;
