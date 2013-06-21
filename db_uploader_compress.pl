@@ -258,7 +258,7 @@ sub zip_file
     # Verify the nocompress flag is not set.  It shouldn't be - this is just a precaution.
     if ( !$nocompress ) {
         # Compress file
-        system($compressPath . " " . $buStagingFolder . $filename . " " . $backupSourceFolder . " " . $backupSource . " " . $suppressOutput);
+        system($compressPath . " -r " . $buStagingFolder . $filename . " " . $backupSourceFolder . " " . $backupSource . " " . $suppressOutput);
         # If encryption is selected, do so now.
         if ( $encrypt ) { 
             encrypt_file($buStagingFolder . $filename);
