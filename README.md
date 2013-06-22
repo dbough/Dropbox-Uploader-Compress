@@ -60,7 +60,7 @@ Changelog
 -- Uses Dropbox Uploader v0.11.8  
 -- Adds support for ZIP copmression.  
 -- Adds ability to specify file extension (for file type obfuscation.)  
--- Adds option to encrpyt file / folder.  
+-- Adds option to encrypt file / folder.  
 -- Removes majority of required flags for easier use.
 - v0.1.2 - Current beta release.  Uses Dropbox Uploader v0.11.6.
 - v0.1.1 - More stable release.  Operates under normal conditions.

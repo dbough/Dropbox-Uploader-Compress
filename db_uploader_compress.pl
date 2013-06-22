@@ -44,6 +44,7 @@ my $fileSuffix;                             # Use custom suffix?
 my $encrypt;                                # Encrypt file?
 my $quiet;                                  # Suppress output?
 my $suppressOutput;                         # Used in conjunction with $queiet.
+my $recur;                                  # Used to allow recursive backups when using zip
 my $help; 									# Display help?
     
 GetOptions (
@@ -129,6 +130,7 @@ if ( -f $backupSource ) {
     # This is probably a confusing way to do this though.
     if ( $compressType eq 'zip' ) {
         $backupSource .= "* ";
+        $recur = " -r ";
     }
 }
 
@@ -258,7 +260,7 @@ sub zip_file
     # Verify the nocompress flag is not set.  It shouldn't be - this is just a precaution.
     if ( !$nocompress ) {
         # Compress file
-        system($compressPath . " " . $buStagingFolder . $filename . " " . $backupSourceFolder . " " . $backupSource . " " . $suppressOutput);
+        system($compressPath . " " . $buStagingFolder . $filename . $recur . " " . $backupSourceFolder . " " . $backupSource . " " . $suppressOutput);
         # If encryption is selected, do so now.
         if ( $encrypt ) { 
             encrypt_file($buStagingFolder . $filename);
