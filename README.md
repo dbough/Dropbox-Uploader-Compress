@@ -1,6 +1,6 @@
 Dropbox Uploader Compress
 -------------------------
-v0.1.2 - Current Beta Release (2013-04-03).
+v0.2.0 - Current Beta Release (2013-06-23).  
 
 Author
 ------
@@ -17,13 +17,15 @@ Readme:  RM.ORIG
 
 Introduction
 ------------
-Dropbox Uploader Compress is a fork of Andrea Fabrizi's Dropbox-Uploader (https://github.com/andreafabrizi/Dropbox-Uploader).  It's native purpose is to allow folder & file compression (tar / gzip) prior to uploading to dropbox.  
+Dropbox Uploader Compress is a fork of Andrea Fabrizi's Dropbox-Uploader (https://github.com/andreafabrizi/Dropbox-Uploader).  It allows file / folder compression using tar/gzip or zip, file encryption and file type obfuscation.
 
 It does not change (and has no intentions of changing) Dropbox-Uploader.
 
 Requirements
 ------------
 - Perl v5
+- TAR or ZIP for Compression
+- OpenSSL for encryption
 
 Instructions
 ------------
@@ -31,34 +33,38 @@ Instructions
 2) Run `./db_uploader_compress.pl --help`
 
     Usage:  ./db_uploader_compress.pl [OPTIONS]
-    Example:  ./db_uploader_compress.pl --bu_source='foo' --bu_source_path='/home/bar/' --bu_target_folder='baz' --script_path='/usr/sbin/' --type='folder'
+    Example:  ./db_uploader_compress.pl -bu_source='/home/bar/foo'
     
-    --bu_source_file     Required:  Folder of file to back up.  Do NOT use full paths.
-    --bu_source_path     Required:  Path to --bu_source_file.
-    --type               Required:  Source = folder or file.
-    --bu_prefix          Optional:  Backed up file/folder filename prefix. (Defaults to 'default').  This is not applicable if the --nocompress flag is set.
-    --bu_target_folder   Optional:  Folder on dropbox to back up to.
-    --bu_staging_folder  Optional:  Folder to stage backkup file / folder (it gets compressed here & then gets removed after it's uploaded.  Defaults to /tmp/.)
-    --script_name        Optional:  Name of Dropbox Uploader shell script (defaults to dropbox_uploader.sh).
-    --script_path        Required:  Path where dropbox_uploader.sh lives
-    --tar                Optional:  Path to tar (defaults to /bin/tar).
-    --rm                 Optional:  Path to rm (defaults to /bin/rm).
-    --nocompress         Optional:  Do not compress file (tar and gzip). Folders HAVE to be compressed!
-    --help               Optional:  Display this message.
+    -bu_source          Required:  Folder of file to back up.  Use full paths.
+    -bu_prefix          Optional:  Backed up file/folder filename prefix. (Defaults to 'default').  This is not applicable if the --nocompress flag is set.
+    -bu_staging_folder  Optional:  Folder to stage backkup file / folder (it gets compressed here & then gets removed after it's uploaded.  Defaults to /tmp/.)
+    -bu_target_folder   Optional:  Folder on dropbox to back up to.
+    -compression_type   Optional:  Valid compression types:  tar and zip.
+    -compression_path   Optional:  Path to compression file.  Default:  /bin/tar (tar), /usr/bin/zip (zip).
+    -download           Optional:  Print download instructions.
+    -file_suffix        Optional:  Custom file suffix.  Used to obfuscate file types.
+    -encrypt            Optional:  Encrypt file
+    -help               Optional:  Display this message.
+    -nocompress         Optional:  Do not compress file. Folders HAVE to be compressed!
+    -q                  Optional:  Suppress outout.
+    -rm                 Optional:  Path to rm (defaults to /bin/rm).
+    -script_name        Optional:  Name of Dropbox Uploader shell script (defaults to dropbox_uploader.sh).
+    -script_path        Optional:  Path where dropbox_uploader.sh lives (defaults to local directory).
 
 Tested On
 ---------
 - Ubuntu Linux 12.04
+- Raspberri Pi Linux 3.6.11
 
-TODO
-----
-- Update instructions (screencast).
 
 Changelog
 ---------
+- v0.2.0 - Current beta release.  
+-- Uses Dropbox Uploader v0.11.8  
+-- Adds support for ZIP copmression.  
+-- Adds ability to specify file extension (for file type obfuscation.)  
+-- Adds option to encrypt file / folder.  
+-- Removes majority of required flags for easier use.
 - v0.1.2 - Current beta release.  Uses Dropbox Uploader v0.11.6.
 - v0.1.1 - More stable release.  Operates under normal conditions.
-- v0.1 - Unstable release.  Active development.
-
-
- 
+- v0.1 - Unstable release.  Active development.  
