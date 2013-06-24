@@ -57,7 +57,7 @@ Tested On
 
 Changelog
 ---------
-- v0.2.0 - Current develop release.  
+- v0.2.0 - Current beta release.  
 -- Uses Dropbox Uploader v0.11.8  
 -- Adds support for ZIP copmression.  
 -- Adds ability to specify file extension (for file type obfuscation.)  
