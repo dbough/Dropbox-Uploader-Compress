@@ -1,6 +1,6 @@
 Dropbox Uploader Compress
 -------------------------
-v0.2.0 - Current Develop Release (2013-06-19).  
+v0.2.0 - Current Beta Release (2013-06-23).  
 
 Author
 ------
@@ -52,6 +52,7 @@ Instructions
 Tested On
 ---------
 - Ubuntu Linux 12.04
+- Raspberri Pi Linux 3.6.11
 
 
 Changelog
