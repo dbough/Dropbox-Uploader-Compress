@@ -24,6 +24,8 @@ It does not change (and has no intentions of changing) Dropbox-Uploader.
 Requirements
 ------------
 - Perl v5
+- TAR or ZIP for Compression
+- OpenSSL for encryption
 
 Instructions
 ------------
